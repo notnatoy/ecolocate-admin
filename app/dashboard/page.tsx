@@ -92,7 +92,7 @@ export default function AdminDashboard() {
   // Helper to ensure correct storage URL and encoding
   const getImageUrl = (path: string) => {
     if (!path) return '/placeholder.jpg'; // Placeholder in public folder
-    const url = `https://swtbavepamdvogyvhrdz.supabase.co/storage/v1/object/public/trees/${encodeURIComponent(path)}`;
+    const url = `https://ztnxzxiwywocesmgzkum.supabase.co/storage/v1/object/public/trees/${encodeURIComponent(path)}`;
     return url;
   };
 
