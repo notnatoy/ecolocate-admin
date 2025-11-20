@@ -6,11 +6,7 @@ import Image from 'next/image';
 import { 
   Search, Plus, Edit2, Trash2, MapPin, Leaf, Info, X, Sprout, UploadCloud, Loader2 
 } from 'lucide-react';
-import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: "Dashboard | EcoLocate",
-};
 const STATUS_OPTIONS = [
   "Not Threatened", "Least Concern", "Near Threatened", 
   "Vulnerable", "Endangered", "Critically Endangered"
