@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ecolocate Admin",
+  title: "Admin Login",
   description: "Admin panel for managing EcoLocate application",
 };
 

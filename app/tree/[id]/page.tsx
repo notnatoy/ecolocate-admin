@@ -11,7 +11,7 @@ export default function TreeLandingPage({ params }: { params: { id: string } }) 
       
       {/* Logo Area */}
       <div className="mb-8 bg-white p-4 rounded-full shadow-xl">
-        <Image src="/logo.png" alt="EcoLocate Logo" width={80} height={80} />
+        <Image src="/LOGO_120125.png" alt="EcoLocate Logo" width={80} height={80} />
       </div>
 
       {/* Main Card */}
