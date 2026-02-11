@@ -3,141 +3,217 @@ import { useState } from 'react';
 import { supabase } from '@/utils/supabase';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, CheckCircle2, ShieldAlert, Loader2, Leaf, UserPlus, ArrowLeft } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [orgCode, setOrgCode] = useState('');
+  
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const ADMIN_SECRET = "ECO-2025-ADMIN"; 
+
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
-      alert("Login failed: " + error.message);
-    } else {
-      router.push('/dashboard');
+    try {
+      if (isSignUp) {
+        if (orgCode !== ADMIN_SECRET) {
+            alert("Invalid Organization Code. You are not authorized to create an admin account.");
+            setLoading(false);
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            alert("Passwords do not match!");
+            setLoading(false);
+            return;
+        }
+
+        const { error } = await supabase.auth.signUp({ 
+            email, 
+            password,
+            options: { data: { role: 'admin' } }
+        });
+        if (error) throw error;
+        alert("Admin registered successfully!");
+        setIsSignUp(false);
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        router.push('/dashboard');
+      }
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  return (
-    <div className="min-h-screen flex bg-gray-200">
+ return (
+    // 1. Added 'pb-24' (padding bottom) to visually lift the center point upwards
+    <div className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-emerald-950 pb-24">
       
-      {/* --------------------------------------------------------- */}
-      {/* LEFT SIDE: IMMERSIVE BRANDING */}
-      {/* --------------------------------------------------------- */}
-      <div className="hidden lg:flex w-1/2 relative justify-center items-center overflow-hidden bg-emerald-900">
-        
-        {/* Background Layers */}
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2000')] bg-cover bg-center mix-blend-overlay opacity-60"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/90 via-emerald-800/80 to-teal-900/90"></div>
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+      {/* Background */}
+      <div className="absolute inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2000" alt="bg" className="w-full h-full object-cover opacity-60" />
+        <div className="absolute inset-0 bg-emerald-950/70 backdrop-blur-[4px]"></div>
+      </div>
 
-        <div className="relative z-10 text-center p-12 max-w-lg">
-            <div className="mb-8 flex justify-center">
-                {/* LOGO CONTAINER: Removed BG, Added White Border */}
-                <div className="flex items-center justify-center  transform rotate-3 hover:rotate-6 transition-transform duration-500">
+      {/* CONTENT WRAPPER */}
+      {/* 2. Reduced gap from 'gap-8' to 'gap-6' to bring form closer to header */}
+      <div className="relative z-10 w-full max-w-6xl px-4 flex flex-col items-center gap-6">
+        
+        {/* --- HEADER --- */}
+        <div className="flex flex-col items-center animate-in fade-in slide-in-from-top-4 duration-700 text-center">
+            
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 mb-2">
+                 {/* LOGO */}
+                 <div className="relative w-24 h-24 md:w-32 md:h-32 transition-transform hover:scale-105 duration-500">
                     <Image 
                         src="/LOGO_border.png" 
                         alt="EcoLocate Logo" 
-                        width={120} 
-                        height={120} 
-                        className="w-24 h-24 object-contain " 
-                        priority
+                        fill
+                        className="object-contain drop-shadow-[0_0_25px_rgba(52,150,105,0.8)]" 
                     />
                 </div>
+
+                {/* TITLE */}
+                <h1 className="text-6xl md:text-8xl font-bold font-serif text-white tracking-wide drop-shadow-2xl">
+                    EcoLocate
+                </h1>
             </div>
-            <h1 className="text-6xl font-bold mb-6 font-serif tracking-tight text-white drop-shadow-sm">
-                EcoLocate
-            </h1>
-            <div className="w-24 h-1.5 bg-emerald-400 mx-auto mb-8 rounded-full"></div>
-            <p className="text-xl text-emerald-50 leading-relaxed font-light">
-                "Preserving our heritage, one tree at a time." <br/>
-                <span className="text-emerald-200/60 text-sm mt-4 block font-sans uppercase tracking-widest font-bold">Admin Portal v1.0</span>
+
+            {/* QUOTE: Forced One Line on Desktop */}
+            {/* Added 'whitespace-nowrap' to force single line on large screens */}
+            <p className="text-emerald-50/90 italic font-serif text-lg md:text-2xl leading-relaxed drop-shadow-md md:whitespace-nowrap">
+                Creating Lasting Memories Amidst Green: A Journey in CvSU Agri-Eco Tourism Park.
             </p>
         </div>
-      </div>
 
-      {/* --------------------------------------------------------- */}
-      {/* RIGHT SIDE: THE LOGIN FORM */}
-      {/* --------------------------------------------------------- */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 relative">
-        
-        {/* Background blobs */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-100/50 rounded-full blur-[100px] -z-10"></div>
-        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-teal-100/50 rounded-full blur-[80px] -z-10"></div>
-
-        <div className="w-full max-w-lg bg-white p-10 rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-white ring-1 ring-emerald-100/50 backdrop-blur-xl">
+        {/* --- LANDSCAPE GLASS CARD --- */}
+        {/* Max-width is set to keep it nice and wide */}
+        <div className="w-full max-w-4xl bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] p-8 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] ring-1 ring-white/10">
             
-            {/* Mobile Logo (Updated to match style) */}
-            <div className="lg:hidden flex justify-center mb-8">
-                 <div className="bg-transparent border-2 border-emerald-100 p-4 rounded-3xl">
-                    <Image src="/LOGO_120125.png" alt="Logo" width={60} height={60} className="object-contain" />
-                 </div>
+            <div className="mb-6 border-b border-white/10 pb-4">
+                <h2 className="text-xl font-medium text-white/90">
+                    {isSignUp ? 'New Admin Registration' : 'Secure Login'}
+                </h2>
             </div>
 
-            <div className="mb-10">
-                <h2 className="text-4xl font-bold text-gray-900 mb-3 tracking-tight">Welcome Back</h2>
-                <p className="text-lg text-gray-500 font-medium">Enter your credentials to access the workspace.</p>
-            </div>
-
-            <form onSubmit={handleLogin} className="space-y-6">
-                <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 uppercase tracking-wider ml-1">Email Address</label>
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                            <Mail className="h-6 w-6 text-gray-400 group-focus-within:text-emerald-600 transition-colors duration-300" />
+            <form onSubmit={handleAuth} className="flex flex-col gap-6">
+                
+                {/* INPUTS GRID */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    {/* Email */}
+                    <div className="space-y-1 group">
+                        <label className="text-xs font-bold text-emerald-100/70 uppercase ml-1">Email</label>
+                        <div className="relative flex items-center">
+                            <Mail className="absolute left-4 h-5 w-5 text-emerald-200/70 group-focus-within:text-emerald-400 transition-colors" />
+                            <input 
+                                className="w-full pl-11 pr-4 py-3.5 bg-emerald-950/40 border border-emerald-500/10 rounded-xl text-emerald-50 placeholder:text-emerald-200/20 focus:bg-emerald-950/60 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all" 
+                                type="email" 
+                                placeholder="admin@ecolocate.com" 
+                                value={email} 
+                                onChange={e => setEmail(e.target.value)} 
+                                required 
+                            />
                         </div>
-                        <input 
-                          className="w-full pl-14 pr-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-lg font-medium text-gray-900 placeholder-gray-400 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all duration-300" 
-                          type="email" 
-                          placeholder="admin@ecolocate.com" 
-                          value={email} 
-                          onChange={e => setEmail(e.target.value)} 
-                          required
-                        />
                     </div>
+
+                    {/* Password */}
+                    <div className="space-y-1 group">
+                        <label className="text-xs font-bold text-emerald-100/70 uppercase ml-1">Password</label>
+                        <div className="relative flex items-center">
+                            <Lock className="absolute left-4 h-5 w-5 text-emerald-200/70 group-focus-within:text-emerald-400 transition-colors" />
+                            <input 
+                                className="w-full pl-11 pr-4 py-3.5 bg-emerald-950/40 border border-emerald-500/10 rounded-xl text-emerald-50 placeholder:text-emerald-200/20 focus:bg-emerald-950/60 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all" 
+                                type="password" 
+                                placeholder="••••••••" 
+                                value={password} 
+                                onChange={e => setPassword(e.target.value)} 
+                                required 
+                            />
+                        </div>
+                    </div>
+
+                    {/* SIGN UP EXTRAS */}
+                    {isSignUp && (
+                        <>
+                            <div className="space-y-1 group animate-in fade-in zoom-in-95">
+                                <label className="text-xs font-bold text-emerald-100/70 uppercase ml-1">Confirm Password</label>
+                                <div className="relative flex items-center">
+                                    <CheckCircle2 className="absolute left-4 h-5 w-5 text-emerald-200/70 group-focus-within:text-emerald-400 transition-colors" />
+                                    <input 
+                                        className="w-full pl-11 pr-4 py-3.5 bg-emerald-950/40 border border-emerald-500/10 rounded-xl text-emerald-50 placeholder:text-emerald-200/20 focus:bg-emerald-950/60 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all" 
+                                        type="password" 
+                                        placeholder="Verify password" 
+                                        value={confirmPassword} 
+                                        onChange={e => setConfirmPassword(e.target.value)} 
+                                        required 
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1 group animate-in fade-in zoom-in-95">
+                                <label className="text-xs font-bold text-amber-200/80 uppercase ml-1">Org Code</label>
+                                <div className="relative flex items-center">
+                                    <ShieldAlert className="absolute left-4 h-5 w-5 text-amber-400/80" />
+                                    <input 
+                                        className="w-full pl-11 pr-4 py-3.5 bg-amber-900/20 border border-amber-500/20 rounded-xl text-amber-50 placeholder:text-amber-200/30 focus:bg-amber-900/30 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 outline-none transition-all" 
+                                        type="password" 
+                                        placeholder="Secret Access Key" 
+                                        value={orgCode} 
+                                        onChange={e => setOrgCode(e.target.value)} 
+                                        required 
+                                    />
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-bold text-gray-700 uppercase tracking-wider ml-1">Password</label>
-                    <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                            <Lock className="h-6 w-6 text-gray-400 group-focus-within:text-emerald-600 transition-colors duration-300" />
-                        </div>
-                        <input 
-                          className="w-full pl-14 pr-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-lg font-medium text-gray-900 placeholder-gray-400 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all duration-300" 
-                          type="password" 
-                          placeholder="••••••••" 
-                          value={password} 
-                          onChange={e => setPassword(e.target.value)} 
-                          required
-                        />
-                    </div>
-                </div>
-
-                <div className="pt-4">
+                {/* ACTION BAR - ICONS FIXED */}
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-4 pt-4 border-t border-white/10">
+                    
+                    {/* SECONDARY BUTTON (Ghost Style) */}
                     <button 
-                      disabled={loading}
-                      className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 hover:shadow-lg hover:shadow-emerald-500/30 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
+                        type="button"
+                        onClick={() => setIsSignUp(!isSignUp)} 
+                        className="group order-2 md:order-1 px-6 py-3.5 rounded-xl text-sm font-bold text-emerald-100 border border-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/50 hover:text-white transition-all flex items-center gap-2"
                     >
-                      {loading ? 'Authenticating...' : 'Sign In'}
-                      {!loading && <ArrowRight size={22} />}
+                        {isSignUp ? (
+                           <>
+                             {/* Back Arrow: Clearly shows returning */}
+                             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
+                             Back to Login
+                           </>
+                        ) : (
+                           <>
+                             {/* User Plus: Clearly shows 'Adding User' instead of 'Next' */}
+                             <UserPlus className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                             Sign Up
+                           </>
+                        )}
+                    </button>
+
+                    {/* PRIMARY BUTTON (Submit) */}
+                    <button 
+                        disabled={loading} 
+                        className="w-full md:w-auto order-1 md:order-2 px-8 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white rounded-xl font-bold tracking-wide shadow-lg shadow-emerald-900/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 border border-white/10"
+                    >
+                      {loading ? <Loader2 className="animate-spin" /> : (isSignUp ? 'Complete Registration' : 'Access Portal')}
                     </button>
                 </div>
             </form>
-
-            <div className="mt-10 text-center">
-                <p className="text-sm text-gray-400 font-medium">
-                    &copy; 2025 EcoLocate Admin Panel
-                </p>
-            </div>
         </div>
+
       </div>
     </div>
   );

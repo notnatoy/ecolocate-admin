@@ -36,7 +36,9 @@ export default function TreeLandingPage({ params }: { params: { id: string } }) 
 
           {/* DOWNLOAD BUTTON */}
           <a 
-            href="/ecolocate.apk" // Ensure you put your .apk file in the 'public' folder!
+            href="https://drive.google.com/uc?export=download&id=1JAeKjOL49_Z6J5IX85TAFvv0qEu8kZD1" // Ensure you put your .apk file in the 'public' folder!
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center justify-center gap-3 w-full bg-[#2E5A38] text-white py-4 rounded-xl font-bold shadow-lg hover:bg-green-800 transition transform hover:-translate-y-1"
           >
             <Download className="w-6 h-6" />
