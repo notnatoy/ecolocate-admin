@@ -89,6 +89,11 @@ export default function AdminDashboard() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [displayFileName, setDisplayFileName] = useState<string | null>(null);
   
+  // --- BANNER STATE ---
+  const [bannerUrl, setBannerUrl] = useState("https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2000");
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+
   // --- QR STATE ---
   const [qrItem, setQrItem] = useState<{ type: 'TREE' | 'POI', data: any } | null>(null); 
   const qrRef = useRef<HTMLCanvasElement>(null); 
@@ -141,6 +146,12 @@ export default function AdminDashboard() {
     setCurrentPage(1);
   }, [activeTab, search]);
 
+  // Load saved banner on startup
+  useEffect(() => {
+    const savedBanner = localStorage.getItem('admin_banner_url');
+    if (savedBanner) setBannerUrl(savedBanner);
+  }, []);
+
   // --- DATA FETCHING ---
   const fetchTrees = async () => {
     setLoading(true);
@@ -168,6 +179,32 @@ export default function AdminDashboard() {
       fetchLogs();
     } catch (e) {
       console.error("Logging failed", e);
+    }
+  };
+
+  const handleBannerUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploadingBanner(true);
+      if (!event.target.files || event.target.files.length === 0) return;
+      
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `admin_banner_${Date.now()}.${fileExt}`; 
+
+      const { error: uploadError } = await supabase.storage.from('trees').upload(fileName, file);
+      if (uploadError) throw uploadError;
+
+      const publicUrl = `https://ztnxzxiwywocesmgzkum.supabase.co/storage/v1/object/public/trees/${fileName}`;
+      
+      setBannerUrl(publicUrl);
+      localStorage.setItem('admin_banner_url', publicUrl);
+      logActivity("UPDATE", "Changed Dashboard Banner");
+      showNotification("Banner updated successfully!");
+      
+    } catch (error: any) {
+      showNotification("Failed to upload banner: " + error.message, 'error');
+    } finally {
+      setUploadingBanner(false);
     }
   };
 
@@ -551,14 +588,48 @@ export default function AdminDashboard() {
 
       <main className="max-w-7xl mx-auto p-6">
 
-        {/* STATIC HEADER BANNER */}
-        <div className={`w-full h-64 rounded-3xl overflow-hidden shadow-xl mb-10 relative border-4 ${theme.mapBorder}`}>
-            <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2000" alt="Park Banner" className="w-full h-full object-cover opacity-80" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1B3124] via-[#1B3124]/40 to-transparent" />
-            <div className="absolute bottom-0 left-0 p-8 w-full">
+        {/* DYNAMIC HEADER BANNER */}
+        <div className={`w-full h-64 rounded-3xl overflow-hidden shadow-xl mb-10 relative border-4 group ${theme.mapBorder}`}>
+            {/* The Image */}
+            <img 
+                src={bannerUrl} 
+                alt="Park Banner" 
+                className="w-full h-full object-cover opacity-80 transition duration-500 group-hover:scale-105" 
+            />
+            
+            {/* Dark Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1B3124] via-[#1B3124]/40 to-transparent pointer-events-none" />
+            
+            {/* Upload Button (Visible only on Hover) */}
+            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    ref={bannerInputRef} 
+                    onChange={handleBannerUpload} 
+                    disabled={uploadingBanner} 
+                />
+                <button
+                    onClick={() => bannerInputRef.current?.click()}
+                    disabled={uploadingBanner}
+                    className="flex items-center gap-2 bg-black/50 hover:bg-black/70 text-white px-5 py-2.5 rounded-full backdrop-blur-md transition shadow-lg border border-white/20 text-sm font-bold"
+                >
+                    {uploadingBanner ? <Loader2 className="w-4 h-4 animate-spin" /> : <Edit2 className="w-4 h-4" />}
+                    {uploadingBanner ? "Uploading..." : "Change Cover"}
+                </button>
+            </div>
+
+            {/* Text Content */}
+            <div className="absolute bottom-0 left-0 p-8 w-full pointer-events-none">
                 <h2 className="text-white text-4xl font-bold flex items-center gap-2 mb-1 drop-shadow-md">
                     <div className="relative w-15 h-15">
-                        <Image src="/EcoParkLogo.png" alt="Logo" fill className="object-contain drop-shadow-[0_0_10px_rgba(52,211,153,0.4)]" />
+                        <Image 
+                            src="/EcoParkLogo.png" 
+                            alt="Logo" 
+                            fill 
+                            className="object-contain drop-shadow-[0_0_10px_rgba(52,211,153,0.4)]" 
+                        />
                     </div>
                     Agri-Eco Tourism Park
                 </h2>

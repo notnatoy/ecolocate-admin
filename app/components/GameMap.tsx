@@ -89,7 +89,7 @@ export default function GameMap({ trees, pois }: Props) {
         maxBoundsViscosity={1.0} 
         style={{ height: "100%", width: "100%", backgroundColor: '#1B3124' }}
       >
-        <ImageOverlay url="/EcoMap.png" opacity={1} bounds={IMAGE_BOUNDS} />
+        <ImageOverlay url="/Map.png" opacity={1} bounds={IMAGE_BOUNDS} />
 
         {/* --- TREE MARKERS (Updated for Multiple Locations) --- */}
         {trees.map((tree) => {
