@@ -61,8 +61,13 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession()
 
   // 4. Protect the Dashboard Route
-  // If user is NOT logged in and NOT on the login page ('/'), redirect them
-  if (!session && request.nextUrl.pathname !== '/') {
+
+  // routes should be accessible WITHOUT logging in
+  const isHomePage = request.nextUrl.pathname === '/'
+  const isDownloadApi = request.nextUrl.pathname === '/api/download-apk'
+
+  // If user is NOT logged in and NOT accessing a public route, redirect them
+  if (!session && !isHomePage && !isDownloadApi) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/'
     return NextResponse.redirect(redirectUrl)
