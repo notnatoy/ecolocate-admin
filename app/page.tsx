@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Mail, Lock, CheckCircle2, ShieldAlert, Loader2, Leaf, UserPlus, ArrowLeft } from 'lucide-react';
 
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

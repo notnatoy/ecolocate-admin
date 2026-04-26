@@ -10,6 +10,7 @@ import {
   Download, QrCode, ClipboardList, User, Map as MapIcon, CheckCircle, AlertTriangle, Calendar, Lightbulb,
   ChevronLeft, ChevronRight 
 } from 'lucide-react';
+import DownloadMetrics from '../components/DownloadMetrics';
 
 const WEBSITE_URL = "https://ecolocate-admin.vercel.app";
 
@@ -534,6 +535,7 @@ export default function AdminDashboard() {
     </div>
 
     <div className="flex items-center gap-4"> 
+        <DownloadMetrics compact={true} />
         <div className={`flex items-center gap-2 p-1.5 rounded-full border shadow-sm ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
             <button 
                 onClick={() => setIsTriviaOpen(true)} 
