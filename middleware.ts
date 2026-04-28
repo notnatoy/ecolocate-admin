@@ -65,14 +65,15 @@ export async function middleware(request: NextRequest) {
   // routes should be accessible WITHOUT logging in
   const isHomePage = request.nextUrl.pathname === '/'
   const isDownloadApi = request.nextUrl.pathname === '/api/download-apk'
+  const isTreeProfile = request.nextUrl.pathname.startsWith('/tree/');
+  const isPoiProfile = request.nextUrl.pathname.startsWith('/poi/');
 
   // If user is NOT logged in and NOT accessing a public route, redirect them
-  if (!session && !isHomePage && !isDownloadApi) {
-    const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = '/'
-    return NextResponse.redirect(redirectUrl)
+  if (!session && !isHomePage && !isDownloadApi && !isTreeProfile && !isPoiProfile) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/';
+    return NextResponse.redirect(redirectUrl);
   }
-
   return response
 }
 
